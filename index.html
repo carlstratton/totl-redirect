@@ -72,6 +72,30 @@
             color: #666;
             margin-top: 20px;
         }
+        .copy-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #1C8376;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        #statusMessage {
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -79,12 +103,16 @@
         <h2>Join TotL Mini League</h2>
         
         <div class="code" id="codeDisplay">46610</div>
+        <button class="copy-btn" id="copyBtn">Copy Code</button>
+        
+        <div id="statusMessage"></div>
         
         <p>Tap a button to open the TotL app:</p>
         
         <a href="#" class="button" id="button1">Open with Custom Scheme</a>
         <a href="#" class="button" id="button2">Open with Universal Link</a>
         <a href="#" class="alt-button" id="button3">Try Alternative Format</a>
+        <a href="#" class="alt-button" id="button4">Try Direct Format (delay=1.5s)</a>
         
         <p class="note">If automatic opening fails, you can manually enter the code shown above in the TotL app.</p>
         
@@ -103,9 +131,49 @@
             return code || '46610'; // Default code if none specified
         }
         
+        // Get delay parameter or use default
+        function getDelayParameter() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const delay = urlParams.get('delay');
+            return delay ? parseFloat(delay) : 1.0; // Default to 1.0 second
+        }
+        
+        // Check if app is installed and handle redirect failures
+        function attemptRedirect(url, fallbackUrl) {
+            // Record start time
+            const startTime = new Date().getTime();
+            
+            // Set a timeout to check if we're still on this page after a short delay
+            setTimeout(function() {
+                const currentTime = new Date().getTime();
+                // If we're still here after 2 seconds, app probably isn't installed
+                if (document.hidden || document.webkitHidden) {
+                    logToDebug("App appears to have opened successfully");
+                } else if (currentTime - startTime < 2000) {
+                    logToDebug("Still on webpage - app may not be installed or couldn't handle the URL");
+                    if (fallbackUrl) {
+                        logToDebug("Trying fallback URL: " + fallbackUrl);
+                        window.location.href = fallbackUrl;
+                    }
+                }
+            }, 2000);
+            
+            // Attempt to open the app
+            window.location.href = url;
+        }
+        
+        // Helper to log to debug area
+        function logToDebug(message) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.innerHTML += `\n${timestamp}: ${message}`;
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+        }
+        
         // Update links and debug info
         function setupPage() {
             const code = getJoinCodeFromUrl();
+            const delay = getDelayParameter();
             const isDebug = window.location.search.includes('debug=true');
             
             // Update displayed code
@@ -115,79 +183,4 @@
             const customSchemeUrl = `totl://join?joinCode=${code}`;
             const universalLinkUrl = `https://app.playtotl.com/join?joinCode=${code}`;
             const alternativeFormat = `totl://miniLeagues/join?code=${code}`;
-            
-            // Update button links
-            const button1 = document.getElementById('button1');
-            const button2 = document.getElementById('button2');
-            const button3 = document.getElementById('button3');
-            
-            button1.href = customSchemeUrl;
-            button2.href = universalLinkUrl;
-            button3.href = alternativeFormat;
-            
-            // Add button click event logging
-            button1.addEventListener('click', function(e) {
-                console.log('Custom scheme button clicked');
-                logButtonClick('Custom scheme', customSchemeUrl);
-            });
-            
-            button2.addEventListener('click', function(e) {
-                console.log('Universal link button clicked');
-                logButtonClick('Universal link', universalLinkUrl);
-            });
-            
-            button3.addEventListener('click', function(e) {
-                console.log('Alternative format button clicked');
-                logButtonClick('Alternative format', alternativeFormat);
-            });
-            
-            // Show debug info
-            if (isDebug) {
-                document.getElementById('debugInfo').style.display = 'block';
-                updateDebugInfo(code, customSchemeUrl, universalLinkUrl, alternativeFormat);
-            } else {
-                document.getElementById('debugInfo').style.display = 'none';
-            }
-        }
-        
-        function logButtonClick(buttonType, url) {
-            const debugInfo = document.getElementById('debugInfo');
-            const timestamp = new Date().toLocaleTimeString();
-            debugInfo.innerHTML += `\n${timestamp}: ${buttonType} button clicked (${url})`;
-            debugInfo.scrollTop = debugInfo.scrollHeight;
-        }
-        
-        function updateDebugInfo(code, url1, url2, url3) {
-            const debugEl = document.getElementById('debugInfo');
-            const userAgent = navigator.userAgent;
-            const timestamp = new Date().toLocaleString();
-            
-            debugEl.innerHTML = `DEBUG INFO (${timestamp})
-            
-Code parameter: ${code}
-User Agent: ${userAgent}
-
-URL FORMATS:
-1. Custom Scheme: ${url1}
-2. Universal Link: ${url2} 
-3. Alternative: ${url3}
-
-APP INFO:
-- Bundle ID: totl25
-- URL Scheme: totl://
-- Universal Link domain: app.playtotl.com
-
-NAVIGATION FLOW:
-1. URL opens app via custom scheme or universal link
-2. NavigationCoordinator processes the URL 
-3. Tab should switch to Mini Leagues (index 2)
-4. Join sheet should be presented with the code
-
-LOG:`;
-        }
-        
-        // Set up the page when loaded
-        window.onload = setupPage;
-    </script>
-</body>
-</html> 
+            const directFormat = `totl://join
