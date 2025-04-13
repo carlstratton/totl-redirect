@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Redirecting to TotL</title>
+    <title>Join TotL Mini League</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-itunes-app" content="app-id=1234567890, app-argument=join?joinCode=46610">
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -46,6 +47,16 @@
             font-size: 14px;
             color: #666;
         }
+        .debug {
+            margin-top: 30px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            text-align: left;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -55,18 +66,27 @@
         
         <div class="code" id="codeDisplay">46610</div>
         
-        <p>If the app doesn't open automatically, try these options:</p>
+        <p>If the app doesn't open automatically, try these buttons:</p>
         
-        <a href="#" class="button" id="appLink">Open in TotL App</a>
+        <a href="#" class="button" id="customSchemeButton">Direct Link</a>
         <div class="or">or</div>
-        <a href="#" class="button" id="webLink">Use Web Link</a>
+        <a href="#" class="button" id="universalLinkButton">Universal Link</a>
+        
+        <div class="debug" id="debugInfo">
+            Debug info will appear here
+        </div>
     </div>
 
     <script>
         // Parse the URL to get the join code
         function getJoinCodeFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('code') || '46610'; // Default code if none specified
+            let code = urlParams.get('code');
+            // Also check for joinCode
+            if (!code) {
+                code = urlParams.get('joinCode');
+            }
+            return code || '46610'; // Default code if none specified
         }
         
         // Update all links with the correct code
@@ -76,28 +96,42 @@
             // Update displayed code
             document.getElementById('codeDisplay').textContent = code;
             
-            // Try multiple URL formats for better compatibility
+            // The NavigationCoordinator is looking for these specific URLs formats:
             const customSchemeUrl = `totl://join?joinCode=${code}`;
-            const webUrl = `https://app.playtotl.com/join?joinCode=${code}`;
+            const universalLinkUrl = `https://app.playtotl.com/join?joinCode=${code}`;
             
-            // Update links
-            document.getElementById('appLink').href = customSchemeUrl;
-            document.getElementById('webLink').href = webUrl;
+            // Create userInfo that matches exactly what DeepLinkDestination.from() expects:
+            const userInfoFormat = {
+                type: "join_league",
+                joinCode: code
+            };
             
-            // Try multiple formats in sequence with delays
+            // Debug info
+            document.getElementById('debugInfo').innerHTML = `
+                Code: ${code}<br>
+                Custom Scheme URL: ${customSchemeUrl}<br>
+                Universal Link URL: ${universalLinkUrl}<br>
+                User Info Format: ${JSON.stringify(userInfoFormat)}
+            `;
+            
+            // Update buttons
+            document.getElementById('customSchemeButton').href = customSchemeUrl;
+            document.getElementById('universalLinkButton').href = universalLinkUrl;
+            
+            // First try the custom scheme link - NavigationCoordinator.handleUrl will receive this
             setTimeout(() => {
-                // First try the custom scheme
                 window.location.href = customSchemeUrl;
                 
-                // Then try alternate formats after delays
+                // If that doesn't work, try the universal link
                 setTimeout(() => {
-                    window.location.href = `totl://miniLeagues/join?code=${code}`;
-                }, 300);
-                
-                setTimeout(() => {
-                    window.location.href = webUrl;
-                }, 600);
+                    window.location.href = universalLinkUrl;
+                }, 1000);
             }, 100);
+        }
+        
+        // Enable debug mode with URL parameter
+        if (window.location.search.includes('debug=true')) {
+            document.getElementById('debugInfo').style.display = 'block';
         }
         
         // Run when page loads
