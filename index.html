@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Join TotL Mini League</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Join a TotL Mini League with your friends">
+    <meta property="og:title" content="Join TotL Mini League">
+    <meta property="og:description" content="Tap to join a TotL Mini League with your friends">
+    <meta property="og:image" content="https://app.playtotl.com/logo.png">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1C8376;
+            margin-top: 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1C8376;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 10px;
+            font-weight: bold;
+        }
+        .code {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        .or {
+            margin: 15px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Join TotL Mini League</h2>
+        <p>Attempting to open TotL app...</p>
+        
+        <div class="code" id="codeDisplay">46610</div>
+        
+        <p>If the app doesn't open automatically, try these options:</p>
+        
+        <a href="totl://join?joinCode=46610" class="button" id="appLink">Open in TotL App</a>
+        <div class="or">or</div>
+        <a href="https://app.playtotl.com/join?joinCode=46610" class="button" id="webLink">Use Web Link</a>
+        
+        <div class="footer">
+            Don't have the app? <a href="https://apps.apple.com/app/totl25/id1234567890" id="appStoreLink">Download from App Store</a>
+        </div>
+    </div>
+
+    <script>
+        // Parse the URL to get the join code
+        function getJoinCodeFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('code') || '46610'; // Default code if none specified
+        }
+        
+        // Update all links with the correct code
+        function updateLinks() {
+            const code = getJoinCodeFromUrl();
+            
+            // Update displayed code
+            document.getElementById('codeDisplay').textContent = code;
+            
+            // Update links
+            document.getElementById('appLink').href = `totl://join?joinCode=${code}`;
+            document.getElementById('webLink').href = `https://app.playtotl.com/join?joinCode=${code}`;
+            
+            // Try to open the app automatically
+            window.location.href = `totl://join?joinCode=${code}`;
+            
+            // If that doesn't work, try the universal link after a delay
+            setTimeout(() => {
+                window.location.href = `https://app.playtotl.com/join?joinCode=${code}`;
+            }, 1500);
+        }
+        
+        // Run when page loads
+        window.onload = updateLinks;
+    </script>
+</body>
+</html> 

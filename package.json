@@ -1,0 +1,9 @@
+{
+  "name": "totl-redirect",
+  "version": "1.0.0",
+  "description": "TotL Mini League join link",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  }
+} 
