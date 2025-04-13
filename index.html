@@ -1,23 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Join TotL Mini League</title>
+    <title>Redirecting to TotL</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Join a TotL Mini League with your friends">
-    <meta property="og:title" content="Join TotL Mini League">
-    <meta property="og:description" content="Tap to join a TotL Mini League with your friends">
-    <meta property="og:image" content="https://app.playtotl.com/logo.png">
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             text-align: center;
             padding: 20px;
             background-color: #f5f5f5;
-            margin: 0;
         }
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 12px;
@@ -51,11 +46,6 @@
             font-size: 14px;
             color: #666;
         }
-        .footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #888;
-        }
     </style>
 </head>
 <body>
@@ -67,13 +57,9 @@
         
         <p>If the app doesn't open automatically, try these options:</p>
         
-        <a href="totl://join?joinCode=46610" class="button" id="appLink">Open in TotL App</a>
+        <a href="#" class="button" id="appLink">Open in TotL App</a>
         <div class="or">or</div>
-        <a href="https://app.playtotl.com/join?joinCode=46610" class="button" id="webLink">Use Web Link</a>
-        
-        <div class="footer">
-            Don't have the app? <a href="https://apps.apple.com/app/totl25/id1234567890" id="appStoreLink">Download from App Store</a>
-        </div>
+        <a href="#" class="button" id="webLink">Use Web Link</a>
     </div>
 
     <script>
@@ -90,17 +76,28 @@
             // Update displayed code
             document.getElementById('codeDisplay').textContent = code;
             
+            // Try multiple URL formats for better compatibility
+            const customSchemeUrl = `totl://join?joinCode=${code}`;
+            const webUrl = `https://app.playtotl.com/join?joinCode=${code}`;
+            
             // Update links
-            document.getElementById('appLink').href = `totl://join?joinCode=${code}`;
-            document.getElementById('webLink').href = `https://app.playtotl.com/join?joinCode=${code}`;
+            document.getElementById('appLink').href = customSchemeUrl;
+            document.getElementById('webLink').href = webUrl;
             
-            // Try to open the app automatically
-            window.location.href = `totl://join?joinCode=${code}`;
-            
-            // If that doesn't work, try the universal link after a delay
+            // Try multiple formats in sequence with delays
             setTimeout(() => {
-                window.location.href = `https://app.playtotl.com/join?joinCode=${code}`;
-            }, 1500);
+                // First try the custom scheme
+                window.location.href = customSchemeUrl;
+                
+                // Then try alternate formats after delays
+                setTimeout(() => {
+                    window.location.href = `totl://miniLeagues/join?code=${code}`;
+                }, 300);
+                
+                setTimeout(() => {
+                    window.location.href = webUrl;
+                }, 600);
+            }, 100);
         }
         
         // Run when page loads
