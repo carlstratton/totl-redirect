@@ -3,7 +3,7 @@
 <head>
     <title>Join TotL Mini League</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="apple-itunes-app" content="app-id=1234567890, app-argument=join?joinCode=46610">
+    <meta name="apple-itunes-app" content="app-id=1582702462, app-argument=join?joinCode=46610">
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -13,7 +13,7 @@
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 20px auto;
             background: white;
             padding: 20px;
             border-radius: 12px;
@@ -24,57 +24,71 @@
             margin-top: 0;
         }
         .button {
-            display: inline-block;
-            padding: 12px 24px;
+            display: block;
+            padding: 16px 24px;
             background: #1C8376;
             color: white;
             text-decoration: none;
             border-radius: 8px;
-            margin: 10px;
+            margin: 16px auto;
             font-weight: bold;
+            width: 80%;
+            max-width: 300px;
+        }
+        .alt-button {
+            display: block;
+            padding: 12px 20px;
+            background: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 10px auto;
+            width: 80%;
+            max-width: 300px;
         }
         .code {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: bold;
-            padding: 8px 16px;
+            padding: 12px 20px;
             background: #f0f0f0;
             border-radius: 8px;
             margin: 20px 0;
             display: inline-block;
-        }
-        .or {
-            margin: 15px 0;
-            font-size: 14px;
-            color: #666;
+            letter-spacing: 3px;
         }
         .debug {
             margin-top: 30px;
-            padding: 10px;
+            padding: 15px;
             background: #f8f8f8;
             border-radius: 8px;
-            font-size: 12px;
-            color: #666;
+            font-size: 14px;
+            color: #333;
             text-align: left;
-            display: none;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Join TotL Mini League</h2>
-        <p>Attempting to open TotL app...</p>
         
         <div class="code" id="codeDisplay">46610</div>
         
-        <p>If the app doesn't open automatically, try these buttons:</p>
+        <p>Tap a button to open the TotL app:</p>
         
-        <a href="#" class="button" id="customSchemeButton">Direct Link</a>
-        <div class="or">or</div>
-        <a href="#" class="button" id="universalLinkButton">Universal Link</a>
+        <a href="#" class="button" id="button1">Open with Custom Scheme</a>
+        <a href="#" class="button" id="button2">Open with Universal Link</a>
+        <a href="#" class="alt-button" id="button3">Try Alternative Format</a>
         
-        <div class="debug" id="debugInfo">
-            Debug info will appear here
-        </div>
+        <p class="note">If automatic opening fails, you can manually enter the code shown above in the TotL app.</p>
+        
+        <div class="debug" id="debugInfo">Loading...</div>
     </div>
 
     <script>
@@ -89,53 +103,91 @@
             return code || '46610'; // Default code if none specified
         }
         
-        // Update all links with the correct code
-        function updateLinks() {
+        // Update links and debug info
+        function setupPage() {
             const code = getJoinCodeFromUrl();
+            const isDebug = window.location.search.includes('debug=true');
             
             // Update displayed code
             document.getElementById('codeDisplay').textContent = code;
             
-            // The NavigationCoordinator is looking for these specific URLs formats:
+            // Define the exact URL formats your app might accept
             const customSchemeUrl = `totl://join?joinCode=${code}`;
             const universalLinkUrl = `https://app.playtotl.com/join?joinCode=${code}`;
+            const alternativeFormat = `totl://miniLeagues/join?code=${code}`;
             
-            // Create userInfo that matches exactly what DeepLinkDestination.from() expects:
-            const userInfoFormat = {
-                type: "join_league",
-                joinCode: code
-            };
+            // Update button links
+            const button1 = document.getElementById('button1');
+            const button2 = document.getElementById('button2');
+            const button3 = document.getElementById('button3');
             
-            // Debug info
-            document.getElementById('debugInfo').innerHTML = `
-                Code: ${code}<br>
-                Custom Scheme URL: ${customSchemeUrl}<br>
-                Universal Link URL: ${universalLinkUrl}<br>
-                User Info Format: ${JSON.stringify(userInfoFormat)}
-            `;
+            button1.href = customSchemeUrl;
+            button2.href = universalLinkUrl;
+            button3.href = alternativeFormat;
             
-            // Update buttons
-            document.getElementById('customSchemeButton').href = customSchemeUrl;
-            document.getElementById('universalLinkButton').href = universalLinkUrl;
+            // Add button click event logging
+            button1.addEventListener('click', function(e) {
+                console.log('Custom scheme button clicked');
+                logButtonClick('Custom scheme', customSchemeUrl);
+            });
             
-            // First try the custom scheme link - NavigationCoordinator.handleUrl will receive this
-            setTimeout(() => {
-                window.location.href = customSchemeUrl;
-                
-                // If that doesn't work, try the universal link
-                setTimeout(() => {
-                    window.location.href = universalLinkUrl;
-                }, 1000);
-            }, 100);
+            button2.addEventListener('click', function(e) {
+                console.log('Universal link button clicked');
+                logButtonClick('Universal link', universalLinkUrl);
+            });
+            
+            button3.addEventListener('click', function(e) {
+                console.log('Alternative format button clicked');
+                logButtonClick('Alternative format', alternativeFormat);
+            });
+            
+            // Show debug info
+            if (isDebug) {
+                document.getElementById('debugInfo').style.display = 'block';
+                updateDebugInfo(code, customSchemeUrl, universalLinkUrl, alternativeFormat);
+            } else {
+                document.getElementById('debugInfo').style.display = 'none';
+            }
         }
         
-        // Enable debug mode with URL parameter
-        if (window.location.search.includes('debug=true')) {
-            document.getElementById('debugInfo').style.display = 'block';
+        function logButtonClick(buttonType, url) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.innerHTML += `\n${timestamp}: ${buttonType} button clicked (${url})`;
+            debugInfo.scrollTop = debugInfo.scrollHeight;
         }
         
-        // Run when page loads
-        window.onload = updateLinks;
+        function updateDebugInfo(code, url1, url2, url3) {
+            const debugEl = document.getElementById('debugInfo');
+            const userAgent = navigator.userAgent;
+            const timestamp = new Date().toLocaleString();
+            
+            debugEl.innerHTML = `DEBUG INFO (${timestamp})
+            
+Code parameter: ${code}
+User Agent: ${userAgent}
+
+URL FORMATS:
+1. Custom Scheme: ${url1}
+2. Universal Link: ${url2} 
+3. Alternative: ${url3}
+
+APP INFO:
+- Bundle ID: totl25
+- URL Scheme: totl://
+- Universal Link domain: app.playtotl.com
+
+NAVIGATION FLOW:
+1. URL opens app via custom scheme or universal link
+2. NavigationCoordinator processes the URL 
+3. Tab should switch to Mini Leagues (index 2)
+4. Join sheet should be presented with the code
+
+LOG:`;
+        }
+        
+        // Set up the page when loaded
+        window.onload = setupPage;
     </script>
 </body>
 </html> 
